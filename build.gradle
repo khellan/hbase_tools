@@ -1,0 +1,110 @@
+description = ''
+apply plugin: 'application'
+apply plugin: 'java'
+
+group = 'no.companybook'
+version = '1.0-SNAPSHOT'
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    mavenLocal()
+    maven { url "http://ci.companybook.no:8081/nexus/content/groups/public2" }
+}
+
+mainClassName = 'no.companybook.Extract'
+
+tasks.withType(Test) { systemProperty 'Runner', 'default'}
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.3'
+    }
+}
+
+apply plugin: 'com.github.johnrengelman.shadow'
+shadowJar {
+  zip64 true
+  classifier null
+}
+
+build.finalizedBy { shadowJar }
+
+configurations.all {
+    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+        if (details.requested.group == 'org.scala-lang' && details.requested.name != 'scala-parser-combinators') {
+            details.useVersion '2.10.4'
+        }
+    }
+}
+
+dependencies {
+    compile(group: 'org.apache.hbase', name: 'hbase-shaded-server', version: '1.2.+') {
+        exclude(module: 'log4j')
+    }
+    compile(group: 'org.apache.hbase', name: 'hbase-shaded-client', version: '1.2.+') {
+        exclude(module: 'thrift')
+        exclude(module: 'libthrift')
+        exclude(module: 'commons-logging')
+        exclude(module: 'avro')
+        exclude(module: 'zookeeper')
+        exclude(module: 'slf4j-api')
+        exclude(module: 'log4j')
+        exclude(module: 'jasper-compiler')
+        exclude(module: 'jasper-runtime')
+        exclude(module: 'jetty')
+        exclude(module: 'jetty-util')
+        exclude(module: 'jsp-2.1')
+        exclude(module: 'jsp-api-2.1')
+        exclude(module: 'servlet-api-2.5')
+        exclude(module: 'jruby-complete')
+        exclude(module: 'jersey-core')
+        exclude(module: 'jersey-json')
+        exclude(module: 'jersey-server')
+        exclude(module: 'jsr311-api')
+        exclude(module: 'jaxb-api')
+        exclude(module: 'protobuf-java')
+    }
+    compile(group: 'org.apache.zookeeper', name: 'zookeeper', version: '3.4.6') {
+        exclude(module: 'log4j')
+    }
+    compile(group: 'org.apache.spark', name: 'spark-core_2.10', version: '1.5.2') {
+        exclude(module: 'chill_2.10')
+        exclude(module: 'chill-java')
+    }
+    compile(group: 'org.apache.spark', name: 'spark-sql_2.10', version: '1.5.2') {
+        exclude(module: 'chill_2.10')
+        exclude(module: 'chill-java')
+    }
+    compile(group: 'org.apache.hadoop', name: 'hadoop-client', version: '2.7.+') {
+        exclude(module: 'avro')
+        exclude(module: 'jetty')
+        exclude(module: 'jetty-util')
+        /* This dependency was originally in the Maven provided scope, but the project was not of type war.
+        This behavior is not yet supported by Gradle, so this dependency has been converted to a compile dependency.
+        Please review and delete this closure when resolved. */
+    }
+    compile(group: 'org.slf4j', name: 'jcl-over-slf4j', version: '1.7.10') {
+        /* This dependency was originally in the Maven provided scope, but the project was not of type war.
+        This behavior is not yet supported by Gradle, so this dependency has been converted to a compile dependency.
+        Please review and delete this closure when resolved. */
+    }
+    compile(group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.10') {
+        /* This dependency was originally in the Maven provided scope, but the project was not of type war.
+        This behavior is not yet supported by Gradle, so this dependency has been converted to a compile dependency.
+        Please review and delete this closure when resolved. */
+    }
+    compile(group: 'org.scala-lang', name: 'scala-library', version: '2.10.+') {
+        /* This dependency was originally in the Maven provided scope, but the project was not of type war.
+    This behavior is not yet supported by Gradle, so this dependency has been converted to a compile dependency.
+    Please review and delete this closure when resolved. */
+    }
+}
+
+compileJava {
+    options.encoding = 'UTF-8'
+    options.compilerArgs << "-Xlint:deprecation"
+}
