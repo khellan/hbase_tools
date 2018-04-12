@@ -24,6 +24,14 @@ class DeleteColumns {
                 .collect(Collectors.toList());
         String tableName = args[2];
         String country = args[3].toUpperCase();
+        if (familyName.length < 1) {
+            System.out.println("Empty column family is not allowed. Please specify column family");
+            System.exit(1);
+        }
+        if (columnNames.size() < 1) {
+            System.out.println("Deleting whole column families is not allowed. You need to specify columns");
+            System.exit(2);
+        }
 
         Configuration config = new Configuration();
         configure(config);
