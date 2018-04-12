@@ -11,30 +11,34 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 class DeleteColumns {
-    private static void configure(Configuration config) {
-        config.set("hbase.zookeeper.property.clientPort", "2181");
-        config.set("hbase.zookeeper.quorum", "cbmasterb-001.servers.prgn.misp.co.uk,cbmasterb-002.servers.prgn.misp.co.uk,cbnodeb-003.servers.prgn.misp.co.uk,cbnodeb-004.servers.prgn.misp.co.uk,cbnodeb-005.servers.prgn.misp.co.uk");
-        config.set("zookeeper.znode.parent", "/hbase-unsecure");
+    private static void configure(Configuration config, String quorum, String port, String parent) {
+        config.set("hbase.zookeeper.property.clientPort", port);
+        config.set("hbase.zookeeper.quorum", quorum);
+        config.set("zookeeper.znode.parent", parent);
     }
 
     public static void main (String[] args) throws IOException {
-        byte[] familyName = Bytes.toBytes(args[0]);
-        List<String> columnNames = Arrays.stream(args[1].split(","))
-                .map(cn -> cn.replaceAll("\\s+", ""))
-                .collect(Collectors.toList());
-        String tableName = args[2];
-        String country = args[3].toUpperCase();
+        String quorum = args[0];
+        String port = args[1];
+        String parent = args[2];
+        byte[] familyName = Bytes.toBytes(args[3]);
         if (familyName.length < 1) {
             System.out.println("Empty column family is not allowed. Please specify column family");
             System.exit(1);
         }
-        if (columnNames.size() < 1) {
+        String rawColumns = args[4];
+        if (rawColumns.length() < 1) {
             System.out.println("Deleting whole column families is not allowed. You need to specify columns");
             System.exit(2);
         }
+        List<String> columnNames = Arrays.stream(rawColumns.split(","))
+                .map(cn -> cn.replaceAll("\\s+", ""))
+                .collect(Collectors.toList());
+        String tableName = args[5];
+        String country = args[6].toUpperCase();
 
         Configuration config = new Configuration();
-        configure(config);
+        configure(config, quorum, port, parent);
         Connection connection = ConnectionFactory.createConnection(config);
         Table table = connection.getTable(TableName.valueOf(tableName));
         Scan scan = new Scan();

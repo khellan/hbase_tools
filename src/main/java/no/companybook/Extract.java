@@ -24,29 +24,33 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 class Extract {
-    private static void configure(Configuration config) {
+    private static void configure(Configuration config, String quorum, String port, String parent) {
         config.set("fs.hdfs.impl",
                 org.apache.hadoop.hdfs.DistributedFileSystem.class.getName()
         );
         config.set("fs.file.impl",
                 org.apache.hadoop.fs.LocalFileSystem.class.getName()
         );
-        config.set("hbase.zookeeper.property.clientPort", "2181");
-        config.set("hbase.zookeeper.quorum", "cbmasterb-001.servers.prgn.misp.co.uk,cbmasterb-002.servers.prgn.misp.co.uk,cbnodeb-003.servers.prgn.misp.co.uk,cbnodeb-004.servers.prgn.misp.co.uk,cbnodeb-005.servers.prgn.misp.co.uk");
-        config.set("zookeeper.znode.parent", "/hbase-unsecure");
+        config.set("hbase.zookeeper.property.clientPort", port);
+        config.set("hbase.zookeeper.quorum", quorum);
+        config.set("zookeeper.znode.parent", parent);
     }
 
+
     public static void main (String[] args) throws IOException, URISyntaxException {
-        byte[] familyName = Bytes.toBytes(args[0]);
-        List<String> columnNames = Arrays.stream(args[1].split(","))
+        String quorum = args[0];
+        String port = args[1];
+        String parent = args[2];
+        byte[] familyName = Bytes.toBytes(args[3]);
+        List<String> columnNames = Arrays.stream(args[4].split(","))
                 .map(cn -> cn.replaceAll("\\s+", ""))
                 .collect(Collectors.toList());
-        String tableName = args[2];
-        String country = args[3].toUpperCase();
-        String nameNode = args[4];
-        String outputFileName = args[5];
+        String tableName = args[5];
+        String country = args[6].toUpperCase();
+        String nameNode = args[7];
+        String outputFileName = args[8];
         Configuration config = new Configuration();
-        configure(config);
+        configure(config, quorum, port, parent);
         Connection connection = ConnectionFactory.createConnection(config);
         Table table = connection.getTable(TableName.valueOf(tableName));
         FileSystem hdfs = FileSystem.get(new URI("hdfs://185.119.172.12:8020"), config);

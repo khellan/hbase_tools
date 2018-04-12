@@ -17,22 +17,29 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 class Insert {
+    private static void configure(Configuration config, String quorum, String port, String parent) {
+        config.set("hbase.zookeeper.property.clientPort", port);
+        config.set("hbase.zookeeper.quorum", quorum);
+        config.set("zookeeper.znode.parent", parent);
+    }
+
     public static void main (String[] args) throws IOException, URISyntaxException {
-        byte[] familyName = Bytes.toBytes(args[0]);
-        String column = args[1];
+        String quorum = args[0];
+        String port = args[1];
+        String parent = args[2];
+        byte[] familyName = Bytes.toBytes(args[3]);
+        String column = args[4];
         byte[] columnName = Bytes.toBytes(column);
-        String tableName = args[2];
+        String tableName = args[5];
         Configuration config = new Configuration();
-        String inputFile = args[3];
+        String inputFile = args[6];
         config.set("fs.hdfs.impl", 
             org.apache.hadoop.hdfs.DistributedFileSystem.class.getName()
         );
         config.set("fs.file.impl",
             org.apache.hadoop.fs.LocalFileSystem.class.getName()
         );
-        config.set("hbase.zookeeper.property.clientPort", "2181");
-        config.set("hbase.zookeeper.quorum", "cbmasterb-001.servers.prgn.misp.co.uk,cbmasterb-002.servers.prgn.misp.co.uk,cbnodeb-003.servers.prgn.misp.co.uk,cbnodeb-004.servers.prgn.misp.co.uk,cbnodeb-005.servers.prgn.misp.co.uk");
-        config.set("zookeeper.znode.parent", "/hbase-unsecure");
+        configure(config, quorum, port, parent);
         Connection connection = ConnectionFactory.createConnection(config);
         Table table = connection.getTable(TableName.valueOf(tableName));
         FileSystem hdfs = FileSystem.get(new URI("hdfs://185.119.172.12:8020"), config);
