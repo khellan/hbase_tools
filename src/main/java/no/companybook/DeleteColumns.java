@@ -55,7 +55,7 @@ class DeleteColumns {
             for (Result result = scanner.next(); result != null; result = scanner.next()) {
                 Delete delete = new Delete(result.getRow());
                 for (String columnName: columnNames) {
-                    delete.addColumn(familyName, Bytes.toBytes(columnName));
+                    delete.addColumns(familyName, Bytes.toBytes(columnName));
                 }
                 System.out.println("Row: " + Bytes.toString(result.getRow()));
                 table.delete(delete);
