@@ -1,18 +1,14 @@
 package no.companybook;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.ConnectionFactory;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+
+import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -42,9 +38,7 @@ class Insert {
         configure(config, quorum, port, parent);
         Connection connection = ConnectionFactory.createConnection(config);
         Table table = connection.getTable(TableName.valueOf(tableName));
-        FileSystem hdfs = FileSystem.get(new URI("hdfs://185.119.172.12:8020"), config);
-        Path file = new Path("hdfs://185.119.172.12:8020//user/khellan/" + inputFile);
-        InputStream is = hdfs.open(file);
+        InputStream is = new FileInputStream(new File(inputFile));
         BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
         String line;
         int i = 0;
@@ -62,7 +56,6 @@ class Insert {
             }
         } finally {
             reader.close();
-            hdfs.close();
             table.close();
             connection.close();
         }
