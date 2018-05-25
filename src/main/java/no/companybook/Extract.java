@@ -1,8 +1,6 @@
 package no.companybook;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.ConnectionFactory;
@@ -11,12 +9,8 @@ import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.net.URI;
+
+import java.io.*;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,19 +41,12 @@ class Extract {
                 .collect(Collectors.toList());
         String tableName = args[5];
         String country = args[6].toUpperCase();
-        String nameNode = args[7];
-        String outputFileName = args[8];
+        String outputFileName = args[7];
         Configuration config = new Configuration();
         configure(config, quorum, port, parent);
         Connection connection = ConnectionFactory.createConnection(config);
         Table table = connection.getTable(TableName.valueOf(tableName));
-        FileSystem hdfs = FileSystem.get(new URI("hdfs://185.119.172.12:8020"), config);
-        String outputFilePath = "hdfs://" + nameNode + ":8020";
-        if (!outputFileName.startsWith("/")) {
-            outputFilePath += "/";
-        }
-        Path file = new Path(outputFilePath + outputFileName);
-        OutputStream os = hdfs.create(file);
+        OutputStream os = new FileOutputStream(new File(outputFileName));
         Writer writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
         Scan scan = new Scan();
         scan.setMaxVersions(1);
@@ -82,7 +69,6 @@ class Extract {
             }
         } finally {
             writer.close();
-            hdfs.close();
             scanner.close();
             table.close();
         }
